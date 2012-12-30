@@ -4,6 +4,9 @@ keep an in-memory copy of the npm package list in sync
 
 # example
 
+This program will keep `packages.json` in sync with the package list on
+registry.npmjs.org, storing the `name`, `description`, and `keywords` fields.
+
 ``` js
 var pkgSync = require('npm-package-sync');
 
@@ -13,7 +16,10 @@ pkgSync(__dirname + '/packages.json', function (sync) {
     });
     
     if (!sync.exists) sync.update(filter)
-    setInterval(sync.update.bind(sync, filter), 3 * 1000 * 60);
+    setInterval(function () {
+        console.log('# ' + Date.now());
+        sync.update(filter)
+    }, 3 * 1000 * 60);
     
     function filter (pkg) {
         return {
@@ -23,6 +29,22 @@ pkgSync(__dirname + '/packages.json', function (sync) {
         };
     }
 });
+```
+
+***
+
+After running sync.js the first time create the initial package list, every 3
+minutes it will check to see if there have been any updates using the mtime from
+the `package.json` file.
+
+```
+$ node example/sync.js 
+# 1356856441891
+connect-raven
+# 1356856621966
+# 1356856802059
+tweet-blink
+^C
 ```
 
 # methods

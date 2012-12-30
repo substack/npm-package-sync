@@ -55,10 +55,15 @@ Sync.prototype.update = function (filter) {
         }
         if (filter) {
             var res = filter(row);
-            if (res) self.packages.unshift(res);
+            if (res) {
+                self.packages.unshift(res);
+                offset ++;
+            }
         }
-        else self.packages.unshift(row);
-        offset ++;
+        else {
+            self.packages.unshift(row);
+            offset ++;
+        }
         
         self.emit('package', row);
     });

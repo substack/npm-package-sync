@@ -13,7 +13,7 @@ module.exports = function (file, cb) {
         
         fs.readFile(file, 'utf8', function (err, src) {
             if (err) return cb(sync);
-            try { sync.packages.splice(0, 0, JSON.parse(src)) }
+            try { sync.packages = JSON.parse(src) }
             catch (err) { return }
             sync.exists = true;
             cb(sync);
@@ -47,6 +47,8 @@ Sync.prototype.update = function (filter) {
     
     var offset = 0;
     parser.on('data', function (row) {
+        if (!row || typeof row !== 'object') return;
+        
         var ix = index[row.name];
         if (ix !== undefined) {
             self.packages.splice(ix + offset, 1);

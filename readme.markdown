@@ -20,15 +20,15 @@ pkgSync(__dirname + '/packages.json', function (sync) {
         console.log('# ' + Date.now());
         sync.update(filter)
     }, 3 * 1000 * 60);
-    
-    function filter (pkg) {
-        return {
-            name: pkg.name,
-            description: pkg.description,
-            keywords: pkg.keywords
-        };
-    }
 });
+
+function filter (pkg) {
+    return {
+        name: pkg.name,
+        description: pkg.description,
+        keywords: pkg.keywords
+    };
+}
 ```
 
 ***

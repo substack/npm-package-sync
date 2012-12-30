@@ -2,9 +2,10 @@ var fs = require('fs');
 var request = require('request');
 var JSONStream = require('JSONStream');
 var EventEmitter = require('events').EventEmitter;
+var inherits = require('inherits');
 
 module.exports = function (file, cb) {
-    fs.statSync(file, function (err, stat) {
+    fs.stat(file, function (err, stat) {
         if (err) return cb(new Sync(0, file))
         
         var since = stat.mtime.valueOf();
@@ -14,6 +15,7 @@ module.exports = function (file, cb) {
             if (err) return cb(sync);
             try { sync.packages.splice(0, 0, JSON.parse(src)) }
             catch (err) { return }
+            sync.exists = true;
             cb(sync);
         });
     });
@@ -23,13 +25,14 @@ function Sync (mtime, file) {
     this.packages = [];
     this.file = file;
     this.since = mtime;
+    this.exists = false;
 }
 
 inherits(Sync, EventEmitter);
 
 Sync.prototype.update = function (filter) {
     var self = this;
-    var u = 'http://registry.npmjs.org/-/all/since?startkey&=' + self.since;
+    var u = 'http://registry.npmjs.org/-/all/since?startkey=' + self.since;
     var r = request(u);
     
     var parser = JSONStream.parse([ true ]);
@@ -54,6 +57,8 @@ Sync.prototype.update = function (filter) {
         }
         else self.packages.unshift(row);
         offset ++;
+        
+        self.emit('package', row);
     });
     
     parser.on('end', function () {
@@ -66,6 +71,7 @@ Sync.prototype.update = function (filter) {
             
             fs.rename(self.file + '_', self.file, function (err) {
                 if (err) self.emit('error', err)
+                self.exists = true;
             });
         });
     });

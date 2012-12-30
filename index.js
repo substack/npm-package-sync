@@ -5,26 +5,23 @@ var EventEmitter = require('events').EventEmitter;
 var inherits = require('inherits');
 
 module.exports = function (file, cb) {
-    fs.stat(file, function (err, stat) {
-        if (err) return cb(new Sync(0, file))
+    fs.readFile(file, 'utf8', function (err, src) {
+        if (err) return cb(new Sync(0, file));
         
-        var since = stat.mtime.valueOf();
-        var sync = new Sync(since, file);
+        try { var parsed = JSON.parse(src) }
+        catch (err) { return cb(new Sync(0, file)) }
         
-        fs.readFile(file, 'utf8', function (err, src) {
-            if (err) return cb(sync);
-            try { sync.packages = JSON.parse(src) }
-            catch (err) { return }
-            sync.exists = true;
-            cb(sync);
-        });
+        var sync = new Sync(parsed.time, file);
+        sync.packages = parsed.packages;
+        sync.exists = true;
+        cb(sync);
     });
 };
 
 function Sync (mtime, file) {
     this.packages = [];
     this.file = file;
-    this.since = mtime;
+    this.time = mtime;
     this.exists = false;
 }
 
@@ -32,7 +29,7 @@ inherits(Sync, EventEmitter);
 
 Sync.prototype.update = function (filter) {
     var self = this;
-    var u = 'http://registry.npmjs.org/-/all/since?startkey=' + self.since;
+    var u = 'http://registry.npmjs.org/-/all/since?startkey=' + self.time;
     var r = request(u);
     
     var parser = JSONStream.parse([ true ]);
@@ -68,11 +65,23 @@ Sync.prototype.update = function (filter) {
         self.emit('package', row);
     });
     
-    parser.on('end', function () {
-        self.since = Date.now();
+    var time, pending = 2;
+    parser.on('end', done);
+    r.on('response', function (res) {
+        time = new Date(res.headers.date).valueOf();
+        done();
+    });
+    
+    function done () {
+        if (--pending !== 0) return;
+        
+        self.time = time;
         self.emit('sync');
         
-        var src = JSON.stringify(self.packages);
+        var src = JSON.stringify({
+            time: time,
+            packages : self.packages
+        });
         fs.writeFile(self.file + '_', src, function (err) {
             if (err) return self.emit('error', err)
             
@@ -81,5 +90,5 @@ Sync.prototype.update = function (filter) {
                 self.exists = true;
             });
         });
-    });
+    }
 };

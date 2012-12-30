@@ -1,0 +1,29 @@
+{
+    "name" : "npm-package-sync",
+    "version" : "0.0.0",
+    "description" : "synchronize the npm package list",
+    "main" : "index.js",
+    "dependencies" : {
+        "inherits" : "~1.0.0",
+        "JSONStream" : "~0.4.3",
+        "request" : "~2.12.0"
+    },
+    "repository" : {
+        "type" : "git",
+        "url" : "git://github.com/substack/npm-package-sync.git"
+    },
+    "homepage" : "https://github.com/substack/npm-package-sync",
+    "keywords" : [
+        "npm",
+        "packages",
+        "all",
+        "since",
+        "replicate"
+    ],
+    "author" : {
+        "name" : "James Halliday",
+        "email" : "mail@substack.net",
+        "url" : "http://substack.net"
+    },
+    "license" : "MIT"
+}

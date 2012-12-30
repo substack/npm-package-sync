@@ -1,6 +1,6 @@
 # npm-package-sync
 
-keep an in-memory copy of the npm package list in sync
+synchronize the npm package list to a local file
 
 # example
 

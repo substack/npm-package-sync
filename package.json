@@ -1,7 +1,7 @@
 {
     "name" : "npm-package-sync",
     "version" : "0.0.0",
-    "description" : "synchronize the npm package list",
+    "description" : "synchronize the npm package list to a local file",
     "main" : "index.js",
     "dependencies" : {
         "inherits" : "~1.0.0",

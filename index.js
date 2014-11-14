@@ -34,8 +34,11 @@ Sync.prototype.update = function (filter) {
     
     var parser = JSONStream.parse([ true ]);
     r.pipe(parser);
-    
-    var index = Object.keys(self.packages)
+
+    var index = self.packages
+        .map(function(pkg, ix) {
+            return pkg.name;
+        })
         .reduce(function (acc, key, ix) {
             acc[key] = ix;
             return acc;
